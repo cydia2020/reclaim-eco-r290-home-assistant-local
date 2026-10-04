@@ -1,0 +1,276 @@
+# Board: Generic ESP8266 Board (Generic)
+# Definition: definitions/boards/generic-esp8266/manifest.yaml
+
+esphome:
+  name: water-heater
+  friendly_name: Water Heater
+  project:
+    name: Reclaim.300REC25P
+    version: ESPHome
+
+esp8266:
+  board: esp01_1m
+
+logger:
+  baud_rate: 0
+
+api:
+  reboot_timeout: 6h
+  encryption:
+    key: !secret esphome_api_key
+
+ota:
+  - platform: esphome
+    encryption:
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  fast_connect: true
+  ap:
+    ssid: Water Heater Fallback Hotspot
+    password: !secret wifi_ap_password
+  reboot_timeout: 6h
+
+captive_portal:
+
+uart:
+  - id: uart_1
+    baud_rate: 9600
+    rx_pin: 3
+    tx_pin: 1
+    rx_buffer_size: 1024B
+  
+tuya:
+  time_id: time_sntp
+  uart_id: uart_1
+  on_datapoint_update:
+    - sensor_datapoint: 9
+      datapoint_type: bitmask
+      then:
+        - lambda: |-
+            std::string errors = "";
+            if (x & (1 << 0)) errors += "E04 ";
+            if (x & (1 << 1)) errors += "E06 ";
+            if (x & (1 << 2)) errors += "E05 ";
+            if (x & (1 << 3)) errors += "E02 ";
+            if (x & (1 << 4)) errors += "E07 ";
+            if (x & (1 << 5)) errors += "E01 ";
+            if (x & (1 << 6)) errors += "E08 ";
+            if (x & (1 << 7)) errors += "E03 ";
+            if (x & (1 << 8)) errors += "E11 ";
+
+            if (errors.empty()) {
+              id(heat_pump_fault_string).publish_state("Clear");
+              id(heat_pump_fault_binary).publish_state(false);
+            } else {
+              id(heat_pump_fault_string).publish_state(errors);
+              id(heat_pump_fault_binary).publish_state(true);
+            }
+
+text_sensor:
+  - platform: template
+    name: "Active Fault Codes"
+    id: heat_pump_fault_string
+    icon: "mdi:alert-circle-outline"
+    entity_category: "diagnostic"
+
+time:
+  - platform: sntp
+    id: time_sntp
+    on_time:
+      - seconds: 0
+        minutes: /15
+        hours: 10-17
+        then:
+          - switch.turn_on: main_switch
+      - seconds: 0
+        minutes: /15
+        hours: 0-9
+        then:
+          - switch.turn_off: main_switch
+      - seconds: 0
+        minutes: /15
+        hours: 18-23
+        then:
+          - switch.turn_off: main_switch
+water_heater:
+  - platform: tuya
+    id: tuya_water_heater
+    name: "Hot Water Heat Pump"
+    icon: "mdi:heat-pump"
+    switch_datapoint: 1
+    target_temperature_datapoint: 2
+    current_temperature_datapoint: 107 # dpId 3 doesn't auto update
+    visual:
+      min_temperature: 10
+      max_temperature: 65
+      target_temperature_step: 1
+    eco_value: 0
+    high_demand_value: 3
+    performance_value: 1
+    mode_datapoint: 4
+    supported_modes:
+      - "OFF"
+      - ECO
+      - PERFORMANCE
+      - HIGH_DEMAND
+
+switch:
+  - platform: tuya
+    id: main_switch
+    name: "Hot Water Switch"
+    switch_datapoint: 1
+    
+select:
+  - platform: tuya
+    id: mode_select
+    name: "Working Mode"
+    enum_datapoint: 4
+    options: {"0":"ECO","1":"Performance","2":"Holiday","3":"High Demand / Rescue"}
+    entity_category: ""
+    icon: "mdi:cog"
+
+number:
+  - platform: tuya
+    name: "Holiday Remaining"
+    number_datapoint: 102
+    min_value: 2
+    max_value: 199
+    step: 1
+    unit_of_measurement: "d"
+    icon: "mdi:calendar-clock"
+    entity_category: "config"
+
+binary_sensor:
+  - platform: tuya
+    name: "Compressor"
+    sensor_datapoint: 103
+    device_class: running
+    icon: "mdi:heat-pump"
+    entity_category: "diagnostic"
+
+  - platform: tuya
+    name: "Fan"
+    sensor_datapoint: 104
+    device_class: running
+    icon: "mdi:fan"
+    entity_category: "diagnostic"
+
+  - platform: tuya
+    name: "Heating Element"
+    sensor_datapoint: 105
+    device_class: heat
+    icon: "mdi:water-boiler"
+    entity_category: "diagnostic"
+
+  - platform: tuya
+    name: "Defrost Valve"
+    sensor_datapoint: 112
+    device_class: opening
+    icon: "mdi:snowflake-melt"
+    entity_category: "diagnostic"
+
+  - platform: tuya
+    name: "Disinfection Active"
+    sensor_datapoint: 116
+    device_class: heat
+    icon: "mdi:bacteria-outline"
+    entity_category: "diagnostic"
+
+  - platform: template
+    name: "System Fault Active"
+    id: heat_pump_fault_binary
+    device_class: problem
+    entity_category: "diagnostic"
+
+sensor:
+  - platform: tuya
+    name: "Tank Water Temperature"
+    sensor_datapoint: 3
+    unit_of_measurement: "°C"
+    accuracy_decimals: 0
+    id: temp_tank
+    device_class: temperature
+# dpId 3 doesn't auto update, so this sensor is disabled by default. Use dpId 107 instead.
+    disabled_by_default: true
+
+  - platform: tuya
+    name: "EEV Position"
+    sensor_datapoint: 106
+    unit_of_measurement: "steps"
+    accuracy_decimals: 0
+    icon: "mdi:valve"
+    entity_category: "diagnostic"
+
+  - platform: tuya
+    name: "Tank Outlet Temperature"
+    sensor_datapoint: 107
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 0
+    icon: "mdi:faucet"
+
+  - platform: tuya
+    name: "Ambient Temperature"
+    sensor_datapoint: 108
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 0
+    icon: "mdi:thermometer-lines"
+    entity_category: ""
+
+  - platform: tuya
+    name: "Discharge Temperature"
+    sensor_datapoint: 109
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 0
+    entity_category: ""
+    icon: "mdi:thermometer-water"
+
+  - platform: tuya
+    name: "Coil Temperature"
+    sensor_datapoint: 110
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 0
+    icon: "mdi:heating-coil"
+
+  - platform: tuya
+    name: "Air Intake Temperature"
+    sensor_datapoint: 111
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 0
+    entity_category: ""
+    icon: "mdi:air-filter"
+
+# how many disinfection cycles were run
+  - platform: tuya
+    name: "Disinfection Count"
+    sensor_datapoint: 113
+    state_class: total_increasing
+    icon: "mdi:counter"
+    entity_category: "diagnostic"
+# when to run next disinfection cycle
+  - platform: tuya
+    name: "Next Disinfection Countdown"
+    sensor_datapoint: 114
+    unit_of_measurement: "min"
+    device_class: duration
+    icon: "mdi:timer-outline"
+    entity_category: "diagnostic"
+# if counts to 0, error E11 is thrown in dpId 9
+  - platform: tuya
+    name: "Relay Stuck Timeout"
+    sensor_datapoint: 115
+    unit_of_measurement: "min"
+    device_class: duration
+    icon: "mdi:timer-alert-outline"
+    entity_category: "diagnostic"
