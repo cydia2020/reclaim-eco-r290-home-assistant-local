@@ -197,4 +197,4 @@ DP 116: High-Temperature Disinfection Active (`高温消毒`)
 * 
 ## ESPHome Example Config
 
-See [Example Config](/ESPHome config/reclaim-heatpump.yaml)
+See [Example Config](/ESPHome%20config/reclaim-heatpump.yaml)
