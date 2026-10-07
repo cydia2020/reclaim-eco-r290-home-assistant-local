@@ -40,7 +40,7 @@ uart:
     rx_pin: 3
     tx_pin: 1
     rx_buffer_size: 1024B
-  
+
 tuya:
   time_id: time_sntp
   uart_id: uart_1
@@ -79,21 +79,19 @@ time:
   - platform: sntp
     id: time_sntp
     on_time:
-      - seconds: 0
-        minutes: /15
-        hours: 10-17
+      - hours: /1
+        seconds: "0"
         then:
-          - switch.turn_on: main_switch
-      - seconds: 0
-        minutes: /15
-        hours: 0-9
-        then:
-          - switch.turn_off: main_switch
-      - seconds: 0
-        minutes: /15
-        hours: 18-23
-        then:
-          - switch.turn_off: main_switch
+          - if:
+              condition:
+                lambda: |
+                  auto t = id(time_sntp).now();
+                  return t.is_dst ? (t.hour >= 13 && t.hour <= 20) : (t.hour >= 10 && t.hour <= 17);
+              then:
+                - switch.turn_on: dp101_switch
+              else:
+                - switch.turn_off: dp101_switch
+
 water_heater:
   - platform: tuya
     id: tuya_water_heater
@@ -101,33 +99,58 @@ water_heater:
     icon: "mdi:heat-pump"
     switch_datapoint: 1
     target_temperature_datapoint: 2
-    current_temperature_datapoint: 107 # dpId 3 doesn't auto update
+    current_temperature_datapoint: 107 # dpId 3 does not auto-update
     visual:
       min_temperature: 10
-      max_temperature: 65
+      max_temperature: 60
       target_temperature_step: 1
-    eco_value: 0
-    high_demand_value: 3
-    performance_value: 1
+
     mode_datapoint: 4
     supported_modes:
       - "OFF"
-      - ECO
+      - HEAT_PUMP
       - PERFORMANCE
-      - HIGH_DEMAND
+      - ELECTRIC
+    heat_pump_value: 0 # eco
+    performance_value: 1 # hp+resistive
+    electric_value: 3 # resistive
 
 switch:
   - platform: tuya
-    id: main_switch
-    name: "Hot Water Switch"
+    id: dp1_switch
     switch_datapoint: 1
-    
+    icon: mdi:power
+    restore_mode: RESTORE_DEFAULT_OFF
+    # heatpump does not switch back on unless mode is changed if this is used
+    internal: true
+
+  - platform: tuya
+    id: dp101_switch
+    switch_datapoint: 101
+    restore_mode: RESTORE_DEFAULT_OFF
+    internal: true
+
+  - platform: template
+    icon: "mdi:power"
+    # use DP1 for state as DP101 does not report
+    lambda: return id(dp1_switch).state;
+    name: Power Switch
+    restore_mode: RESTORE_DEFAULT_OFF
+    turn_off_action:
+      - switch.turn_off: dp101_switch
+    turn_on_action:
+      - switch.turn_on: dp101_switch
+
 select:
   - platform: tuya
     id: mode_select
     name: "Working Mode"
     enum_datapoint: 4
-    options: {"0":"ECO","1":"Performance","2":"Holiday","3":"High Demand / Rescue"}
+    options:
+      0: "Economy (H/P Only)"
+      1: "Recovery (H/P + Element)"
+      2: "Holiday (Anti-Freeze)"
+      3: "Rescue (Element Only)"
     entity_category: ""
     icon: "mdi:cog"
 
@@ -160,8 +183,8 @@ binary_sensor:
   - platform: tuya
     name: "Heating Element"
     sensor_datapoint: 105
-    device_class: heat
-    icon: "mdi:water-boiler"
+    device_class: running
+    icon: "mdi:heat-wave"
     entity_category: "diagnostic"
 
   - platform: tuya
@@ -192,8 +215,6 @@ sensor:
     accuracy_decimals: 0
     id: temp_tank
     device_class: temperature
-# dpId 3 doesn't auto update, so this sensor is disabled by default. Use dpId 107 instead.
-    disabled_by_default: true
 
   - platform: tuya
     name: "EEV Position"
@@ -204,6 +225,7 @@ sensor:
     entity_category: "diagnostic"
 
   - platform: tuya
+    id: temp_outlet
     name: "Tank Outlet Temperature"
     sensor_datapoint: 107
     unit_of_measurement: "°C"
@@ -251,14 +273,14 @@ sensor:
     entity_category: ""
     icon: "mdi:air-filter"
 
-# how many disinfection cycles were run
+  # how many disinfection cycles were run
   - platform: tuya
     name: "Disinfection Count"
     sensor_datapoint: 113
     state_class: total_increasing
     icon: "mdi:counter"
     entity_category: "diagnostic"
-# when to run next disinfection cycle
+  # when to run next disinfection cycle
   - platform: tuya
     name: "Next Disinfection Countdown"
     sensor_datapoint: 114
@@ -266,7 +288,7 @@ sensor:
     device_class: duration
     icon: "mdi:timer-outline"
     entity_category: "diagnostic"
-# if counts to 0, error E11 is thrown in dpId 9
+  # if counts to 0, error E11 is thrown in dpId 9
   - platform: tuya
     name: "Relay Stuck Timeout"
     sensor_datapoint: 115
