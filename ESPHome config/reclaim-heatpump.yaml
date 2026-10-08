@@ -120,26 +120,13 @@ switch:
     id: dp1_switch
     switch_datapoint: 1
     icon: mdi:power
-    restore_mode: RESTORE_DEFAULT_OFF
     # heatpump does not switch back on unless mode is changed if this is used
     internal: true
 
   - platform: tuya
     id: dp101_switch
     switch_datapoint: 101
-    restore_mode: RESTORE_DEFAULT_OFF
     internal: true
-
-  - platform: template
-    icon: "mdi:power"
-    # use DP1 for state as DP101 does not report
-    lambda: return id(dp1_switch).state;
-    name: Power Switch
-    restore_mode: RESTORE_DEFAULT_OFF
-    turn_off_action:
-      - switch.turn_off: dp101_switch
-    turn_on_action:
-      - switch.turn_on: dp101_switch
 
 select:
   - platform: tuya
