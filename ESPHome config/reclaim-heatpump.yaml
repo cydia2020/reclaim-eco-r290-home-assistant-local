@@ -78,19 +78,6 @@ text_sensor:
 time:
   - platform: sntp
     id: time_sntp
-    on_time:
-      - hours: /1
-        seconds: "0"
-        then:
-          - if:
-              condition:
-                lambda: |
-                  auto t = id(time_sntp).now();
-                  return t.is_dst ? (t.hour >= 13 && t.hour <= 20) : (t.hour >= 10 && t.hour <= 17);
-              then:
-                - switch.turn_on: dp101_switch
-              else:
-                - switch.turn_off: dp101_switch
 
 water_heater:
   - platform: tuya

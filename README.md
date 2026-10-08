@@ -194,7 +194,7 @@ DP 116: High-Temperature Disinfection Active (`高温消毒`)
 * Values: `true` (active), `false` (idle)
 * Description: Binary indicator denoting active execution of the anti-legionella high-temperature heating cycle
 * Side note: 高温消毒 means high-temperature disinfection in Chinese.
-* 
+
 ## ESPHome Example Config
 
 See [Example Config](/ESPHome%20config/reclaim-heatpump.yaml)
