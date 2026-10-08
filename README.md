@@ -30,7 +30,7 @@ I have identified a few well-known components on this specific board. Please see
 
 The RS485/Modbus transceiver is significant here as it's quite likely that we can tap into Modbus directly with a Modbus RTU master device without needing to flashing the Tuya Wi-Fi chip. Might look into that later, again, if my time allows it.
 
-![Identified Components](/Teardown Pictures/Components/Overview.jpg?raw=true "Identified Components")
+![Identified Components](/Teardown%20Pictures/Components/Overview.jpg?raw=true "Identified Components")
 
 ## Tuya Datapoints Explained
 *Warning: This section is AI generated based on my digging, datapoints are accurate*
@@ -197,4 +197,4 @@ DP 116: High-Temperature Disinfection Active (`高温消毒`)
 * 
 ## ESPHome Example Config
 
-See [Example Config](/ESPHome config/reclaim-heatpump.yaml)
+See [Example Config](/ESPHome%20config/reclaim-heatpump.yaml)
