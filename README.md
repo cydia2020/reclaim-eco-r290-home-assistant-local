@@ -193,7 +193,7 @@ DP 116: High-Temperature Disinfection Active (`高温消毒`)
 * Direction: Report only
 * Values: `true` (active), `false` (idle)
 * Description: Binary indicator denoting active execution of the anti-legionella high-temperature heating cycle
-* Side note: 高温消毒 means high-temperature disinfection in Chinese.
+* Side note: 高温消毒 means high-temperature disinfection in Chinese. When this `bool` is on, attempting to run the compressor will cause error E07.
 
 ## ESPHome Example Config
 
