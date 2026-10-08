@@ -171,29 +171,39 @@ DP 113: Disinfection Cycle Counter (`P39 cycle` / `xd_cs`)
 * Type: Integer
 * Direction: Report only
 * Range: 0 to 20000 Cycles (Step: 1)
-* Description: Total counter of completed high-temperature anti-legionella sanitisation cycles
+* Description: Total counter of completed high-temperature anti-legionella sanitisation cycles.
 * Side note: xd_cs is Chinese Pinyin for Xiāodú Cìshù, which literally means "Disinfection Counter".
 
 DP 114: Next Disinfection Countdown (`P39` / `xd_tm`)
 * Type: Integer
 * Direction: Report only
 * Range: 0 to 9999 Minutes (Step: 1)
-* Description: Countdown timer until the next scheduled periodic disinfection cycle runs when the tank temperature is lower than 60 °C. Resets to 8640 minutes when tank water reaches 60 °C.
+* Description: 
+  * Countdown timer until the next scheduled periodic disinfection cycle runs when the tank temperature is lower than 60 °C. 
+  * Resets to 8640 minutes when tank water reaches 60 °C.
 
 
 DP 115: Heating Fault Timeout / Watchdog (`P40` / `heat_tm`)
 * Type: Integer
 * Direction: Report only
 * Range: 0 to 9999 Minutes (Step: 1)
-* Description: Counts down elapsed heating duration; resets to 4320 minutes when the heat pump and element turn off, and raises a thermal fault if the timer reaches 0. Likely used to track whether the relaies are stuck or if the heat pump is not heating.
+* Description: 
+   * Counts down elapsed heating duration; resets to 4320 minutes when the heat pump and element turn off, and raises a thermal fault if the timer reaches 0. 
+   * Likely used to track whether the relaies are stuck or if the heat pump is not heating.
 
+   * Becomes `0` when disinfection is active.
 
 DP 116: High-Temperature Disinfection Active (`高温消毒`)
 * Type: Boolean
 * Direction: Report only
 * Values: `true` (active), `false` (idle)
-* Description: Binary indicator denoting active execution of the anti-legionella high-temperature heating cycle
-* Side note: 高温消毒 means high-temperature disinfection in Chinese. When this `bool` is on, attempting to run the compressor will cause error E07.
+* Description:
+ * Binary indicator denoting active execution of the anti-legionella high-temperature heating cycle
+   * When running, dpId 116 is `1`, and dpId `113`, `114`, `115` are all `0`.
+     *
+   * When running, attempting to run the compressor using dpId `101` will cause error E07.
+      *
+   * Side note: 高温消毒 means high-temperature disinfection in Chinese. 
 
 ## ESPHome Example Config
 
