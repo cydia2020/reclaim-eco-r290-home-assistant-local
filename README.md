@@ -8,7 +8,10 @@ It contains the following information:
 4. Tuya datapoint IDs and their functions of the MCU;
 5. Converting the hot water tank from Tuya to ESPHome.
 
-## Note before you start
+## PLEASE READ ME FIRST: RESET PROCEDURE IF A FAULT APPEARS
+An incorrect configuration during boot can sometimes cause a fault to appear when the compressor starts, you can avoid a service call by trying to press down on all 4 buttons (up, menu, timer, down) on the controller display when the mode is set to `off` for 3 seconds to factory reset the controller (the controller will beep twice).
+
+## Warranty
 The [Australian Consumer Guarantee](https://www.accc.gov.au/media-release/broken-but-out-of-warranty-your-consumer-guarantee-rights-may-still-apply) dictates that the manufacturers or suppliers cannot "void" a product's warranty, simply because the consumer opened or modified the product in some way.
 
 However, this is not legal advice, and you should always backup your firmware before flashing anything else. I might upload a backup in the future if my time allows just in case.
