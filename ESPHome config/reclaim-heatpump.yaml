@@ -176,7 +176,7 @@ number:
     name: "Holiday Remaining"
     number_datapoint: 102
     min_value: 2
-    max_value: 199
+    max_value: 14 # Goes to 199, but you *really* should turn your water mains off
     step: 1
     unit_of_measurement: "d"
     icon: "mdi:calendar-clock"
