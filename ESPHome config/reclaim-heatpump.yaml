@@ -20,7 +20,7 @@ esp8266:
 #     sdk_silent: all
 #     loglevel: NONE
 
-# --- DEFAULT CHIP: if using Tuya WBR3, uncomment the following ---
+# --- DEFAULT MODULE: if using Tuya WBR3, uncomment the following ---
 # rtl87xx:
 #   board: wbr3
 #   framework:
@@ -65,7 +65,7 @@ uart:
 #     tx_pin: P11
 #     rx_buffer_size: 768B
 
-# --- DEFAULT CHIP: if using Tuya WBR3, uncomment the following ---
+# --- DEFAULT MODULE: if using Tuya WBR3, uncomment the following ---
 # uart:
 #   - id: uart_1
 #     baud_rate: 9600
