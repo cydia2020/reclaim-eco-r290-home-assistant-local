@@ -89,7 +89,7 @@ water_heater:
     current_temperature_datapoint: 107 # dpId 3 does not auto-update
     visual:
       min_temperature: 10
-      max_temperature: 60
+      max_temperature: 65
       target_temperature_step: 1
 
     mode_datapoint: 4
@@ -107,7 +107,8 @@ switch:
     id: dp1_switch
     switch_datapoint: 1
     icon: mdi:power
-    # heatpump does not switch back on unless mode is changed if this is used
+    # when using this switch heatpump does not switch back on,
+    # unless water is colder than 45C, or working mode is changed to performance.
     internal: true
 
   - platform: tuya
