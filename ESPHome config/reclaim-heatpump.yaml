@@ -8,8 +8,24 @@ esphome:
     name: Reclaim.300REC25P
     version: ESPHome
 
+# example only, you can also use esp32, tuya wbr3, or tuya wb3s
+# the board came with Tuya WBR3
 esp8266:
   board: esp01_1m
+
+# --- if using Tuya WB3S, uncomment the following ---
+# bk72xx:
+#   board: wb3s
+#   framework:
+#     sdk_silent: all
+#     loglevel: NONE
+
+# --- DEFAULT CHIP: if using Tuya WBR3, uncomment the following ---
+# rtl87xx:
+#   board: wbr3
+#   framework:
+#     loglevel: NONE
+#     sdk_silent: all
 
 logger:
   baud_rate: 0
@@ -39,7 +55,23 @@ uart:
     baud_rate: 9600
     rx_pin: 3
     tx_pin: 1
-    rx_buffer_size: 1024B
+    rx_buffer_size: 768B
+
+# --- if using Tuya WB3S, uncomment the following ---
+# uart:
+#   - id: uart_1
+#     baud_rate: 9600
+#     rx_pin: P10
+#     tx_pin: P11
+#     rx_buffer_size: 768B
+
+# --- DEFAULT CHIP: if using Tuya WBR3, uncomment the following ---
+# uart:
+#   - id: uart_1
+#     baud_rate: 9600
+#     rx_pin: GPIO15
+#     tx_pin: GPIO16
+#     rx_buffer_size: 768B
 
 tuya:
   time_id: time_sntp
@@ -78,6 +110,16 @@ text_sensor:
 time:
   - platform: sntp
     id: time_sntp
+# --- you can add timer automations here, for example: ---
+    # on_time:
+    #   - hours: 11
+    #     seconds: 0
+    #     then:
+    #       - switch.turn_on: dp101_switch
+    #   - hours: 19
+    #     seconds: 0
+    #     then:
+    #       - switch.turn_off: dp1_switch
 
 water_heater:
   - platform: tuya
